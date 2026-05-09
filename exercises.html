@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Упражнения — казахско-русский</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #fff;
+            color: #222;
+            line-height: 1.5;
+            padding: 20px;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.6em;
+            margin-bottom: 24px;
+            font-weight: 600;
+        }
+
+        .mode-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .mode-bar span {
+            font-weight: 500;
+        }
+        .mode-bar button {
+            padding: 8px 18px;
+            border: 1px solid #999;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 2px;
+            font-size: 0.95em;
+            font-family: inherit;
+            transition: 0.15s;
+        }
+        .mode-bar button.active-mode {
+            background: #333;
+            color: #fff;
+            border-color: #333;
+            font-weight: 600;
+        }
+        .mode-bar button:hover:not(.active-mode) {
+            background: #f0f0f0;
+        }
+
+        .exercise-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 20px;
+        }
+        @media (max-width: 600px) {
+            .exercise-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .exercise-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding: 8px 10px;
+            border: 1px solid #eee;
+            border-radius: 2px;
+            background: #fafafa;
+            transition: 0.2s;
+        }
+        .exercise-item.correct {
+            background: #e6f4ea;
+            border-color: #a3d9b1;
+        }
+        .exercise-item.incorrect {
+            background: #fdecea;
+            border-color: #f5c6cb;
+        }
+
+        .exercise-item .prompt {
+            font-weight: 600;
+            min-width: 70px;
+            font-size: 0.95em;
+            word-break: break-word;
+        }
+        .exercise-item input {
+            flex: 1;
+            min-width: 80px;
+            padding: 7px 8px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            font-size: 0.95em;
+            font-family: inherit;
+            transition: 0.15s;
+        }
+        .exercise-item input:focus {
+            outline: none;
+            border-color: #666;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.04);
+        }
+        .exercise-item.correct input {
+            border-color: #2d7a3a;
+            background: #f8fdf9;
+        }
+        .exercise-item.incorrect input {
+            border-color: #c0392b;
+            background: #fefbfb;
+        }
+
+        .feedback {
+            font-size: 0.8em;
+            min-width: 60px;
+            flex-shrink: 0;
+        }
+        .feedback.correct-fb {
+            color: #2d7a3a;
+            font-weight: 600;
+        }
+        .feedback.incorrect-fb {
+            color: #c0392b;
+        }
+
+        .score {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-top: 16px;
+            padding: 8px 14px;
+            border-radius: 2px;
+            display: inline-block;
+        }
+        .score.good {
+            background: #e6f4ea;
+            color: #1b5e20;
+        }
+        .score.mid {
+            background: #fff8e1;
+            color: #7a5900;
+        }
+        .score.low {
+            background: #fdecea;
+            color: #8b1a1a;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+        .action-row button {
+            padding: 8px 20px;
+            border: 1px solid #999;
+            background: #fff;
+            cursor: pointer;
+            border-radius: 2px;
+            font-size: 0.95em;
+            font-family: inherit;
+            transition: 0.15s;
+        }
+        .action-row button:hover {
+            background: #f0f0f0;
+        }
+        .action-row button.primary {
+            background: #333;
+            color: #fff;
+            border-color: #333;
+            font-weight: 600;
+        }
+        .action-row button.primary:hover {
+            background: #444;
+        }
+
+        .nav-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #444;
+            text-decoration: none;
+            border: 1px solid #ccc;
+            padding: 6px 16px;
+            border-radius: 2px;
+            font-size: 0.9em;
+            transition: 0.15s;
+        }
+        .nav-link:hover {
+            background: #f5f5f5;
+            border-color: #999;
+        }
+    </style>
+</head>
+<body>
+    <main>
+
+        <a class="nav-link" href="index.html">Перейти к словарю</a>
+        <h1>Упражнения</h1>
+
+        <div class="mode-bar">
+            <span>Направление:</span>
+            <button type="button" id="mode-ru-kz" class="active-mode">Русский - Казахский</button>
+            <button type="button" id="mode-kz-ru">Казахский - Русский</button>
+        </div>
+
+        <ul class="exercise-list" id="exercise-list"></ul>
+        <div class="score" id="score-display" style="display:none;"></div>
+
+        <div class="action-row">
+            <button type="button" class="primary" id="check-btn">Проверить</button>
+            <button type="button" id="reshuffle-btn">Перемешать</button>
+        </div>
+
+    </main>
+
+    <script>
+        (function() {
+            const STORAGE_KEY = 'kazdict_custom_words_v3';
+
+            const defaultWords = [
+                { kz: 'отбасы', ru: 'семья' },
+                { kz: 'білім', ru: 'знание' },
+                { kz: 'ғылым', ru: 'наука' },
+                { kz: 'мәдениет', ru: 'культура' },
+                { kz: 'дәстүр', ru: 'традиция' },
+                { kz: 'табиғат', ru: 'природа' },
+                { kz: 'экология', ru: 'экология' },
+                { kz: 'технология', ru: 'технология' },
+                { kz: 'денсаулық', ru: 'здоровье' },
+                { kz: 'экономика', ru: 'экономика' },
+                { kz: 'тарих', ru: 'история' },
+                { kz: 'өнер', ru: 'искусство' },
+                { kz: 'Отан', ru: 'Родина' },
+                { kz: 'патриотизм', ru: 'патриотизм' },
+                { kz: 'жастар', ru: 'молодёжь' },
+                { kz: 'еңбек', ru: 'труд' },
+                { kz: 'мамандық', ru: 'профессия' },
+                { kz: 'адамгершілік', ru: 'нравственность' },
+                { kz: 'жаһандану', ru: 'глобализация' },
+                { kz: 'тәуелсіздік', ru: 'независимость' },
+                { kz: 'бейбітшілік', ru: 'мир' },
+                { kz: 'достық', ru: 'дружба' },
+                { kz: 'болашақ', ru: 'будущее' },
+                { kz: 'даму', ru: 'развитие' },
+                { kz: 'құқық', ru: 'право' },
+                { kz: 'әділеттілік', ru: 'справедливость' },
+                { kz: 'тіл', ru: 'язык' },
+                { kz: 'ұлт', ru: 'нация' },
+                { kz: 'руханият', ru: 'духовность' },
+                { kz: 'құндылық', ru: 'ценность' },
+                { kz: 'тәрбие', ru: 'воспитание' },
+                { kz: 'мемлекет', ru: 'государство' },
+                { kz: 'қоғам', ru: 'общество' },
+                { kz: 'еркіндік', ru: 'свобода' },
+                { kz: 'жауапкершілік', ru: 'ответственность' },
+                { kz: 'сыйластық', ru: 'уважение' },
+                { kz: 'ынтымақтастық', ru: 'сотрудничество' },
+                { kz: 'мұра', ru: 'наследие' },
+                { kz: 'өркениет', ru: 'цивилизация' },
+                { kz: 'көшбасшы', ru: 'лидер' },
+                { kz: 'жетістік', ru: 'достижение' },
+                { kz: 'мүмкіндік', ru: 'возможность' },
+            ];
+
+            let customWords = [];
+            let allWords = [];
+            let exerciseWords = [];
+            let currentMode = 'ru-kz';
+            let checkedState = false;
+
+            function loadCustomWords() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (Array.isArray(parsed)) {
+                            customWords = parsed
+                                .filter(w => w && typeof w.kz === 'string' && typeof w.ru === 'string' && w.kz.trim() && w.ru.trim())
+                                .map(w => ({ kz: w.kz.trim(), ru: w.ru.trim(), isCustom: true }));
+                        }
+                    }
+                } catch (e) {
+                    customWords = [];
+                }
+            }
+
+            function rebuildAllWords() {
+                allWords = [...defaultWords.map(w => ({ ...w, isCustom: false })), ...customWords];
+            }
+
+            function shuffleArray(arr) {
+                const a = [...arr];
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
+            }
+
+            function selectExerciseWords() {
+                const pool = shuffleArray(allWords);
+                const count = Math.min(20, pool.length);
+                exerciseWords = pool.slice(0, count);
+            }
+
+            function renderExercise() {
+                const list = document.getElementById('exercise-list');
+                list.innerHTML = '';
+
+                exerciseWords.forEach((word, idx) => {
+                    const li = document.createElement('li');
+                    li.classList.add('exercise-item');
+                    li.setAttribute('data-index', idx);
+
+                    const promptText = currentMode === 'ru-kz' ? word.ru : word.kz;
+
+                    const span = document.createElement('span');
+                    span.classList.add('prompt');
+                    span.textContent = promptText;
+
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.setAttribute('data-index', idx);
+                    input.setAttribute('autocomplete', 'off');
+                    input.setAttribute('spellcheck', 'false');
+                    input.placeholder = currentMode === 'ru-kz' ? 'казахский...' : 'перевод...';
+
+                    input.addEventListener('input', function() {
+                        li.classList.remove('correct', 'incorrect');
+                        const fb = li.querySelector('.feedback');
+                        if (fb) fb.textContent = '';
+                        if (checkedState) {
+                            clearScore();
+                            checkedState = false;
+                        }
+                    });
+
+                    const feedbackSpan = document.createElement('span');
+                    feedbackSpan.classList.add('feedback');
+
+                    li.appendChild(span);
+                    li.appendChild(input);
+                    li.appendChild(feedbackSpan);
+                    list.appendChild(li);
+                });
+
+                clearScore();
+                checkedState = false;
+                updateModeButtons();
+            }
+
+            function clearScore() {
+                const scoreDisplay = document.getElementById('score-display');
+                scoreDisplay.style.display = 'none';
+                scoreDisplay.textContent = '';
+                scoreDisplay.className = 'score';
+            }
+
+            function updateModeButtons() {
+                const btnRuKz = document.getElementById('mode-ru-kz');
+                const btnKzRu = document.getElementById('mode-kz-ru');
+                btnRuKz.classList.toggle('active-mode', currentMode === 'ru-kz');
+                btnKzRu.classList.toggle('active-mode', currentMode === 'kz-ru');
+            }
+
+            function checkAnswers() {
+                const items = document.querySelectorAll('#exercise-list .exercise-item');
+                let correctCount = 0;
+                const total = exerciseWords.length;
+
+                items.forEach(item => {
+                    const idx = parseInt(item.getAttribute('data-index'));
+                    const word = exerciseWords[idx];
+                    const input = item.querySelector('input');
+                    const feedbackSpan = item.querySelector('.feedback');
+                    const userAnswer = input.value.trim();
+
+                    const expectedAnswer = currentMode === 'ru-kz' ? word.kz : word.ru;
+
+                    const isCorrect = userAnswer.toLowerCase().trim() === expectedAnswer.toLowerCase().trim();
+
+                    item.classList.remove('correct', 'incorrect');
+                    feedbackSpan.classList.remove('correct-fb', 'incorrect-fb');
+
+                    if (isCorrect) {
+                        item.classList.add('correct');
+                        feedbackSpan.textContent = 'верно';
+                        feedbackSpan.classList.add('correct-fb');
+                        correctCount++;
+                    } else if (userAnswer === '') {
+                        item.classList.add('incorrect');
+                        feedbackSpan.textContent = 'правильно: ' + expectedAnswer;
+                        feedbackSpan.classList.add('incorrect-fb');
+                    } else {
+                        item.classList.add('incorrect');
+                        feedbackSpan.textContent = 'правильно: ' + expectedAnswer;
+                        feedbackSpan.classList.add('incorrect-fb');
+                    }
+                });
+
+                checkedState = true;
+                showScore(correctCount, total);
+            }
+
+            function showScore(correct, total) {
+                const scoreDisplay = document.getElementById('score-display');
+                scoreDisplay.style.display = 'inline-block';
+                scoreDisplay.textContent = 'Результат: ' + correct + ' / ' + total;
+                scoreDisplay.className = 'score';
+                const ratio = correct / total;
+                if (ratio >= 0.85) scoreDisplay.classList.add('good');
+                else if (ratio >= 0.5) scoreDisplay.classList.add('mid');
+                else scoreDisplay.classList.add('low');
+            }
+
+            function switchMode(newMode) {
+                if (currentMode === newMode) return;
+                currentMode = newMode;
+                updateModeButtons();
+                renderExercise();
+                clearScore();
+                checkedState = false;
+            }
+
+            function reshuffleExercise() {
+                loadCustomWords();
+                rebuildAllWords();
+                selectExerciseWords();
+                renderExercise();
+                clearScore();
+                checkedState = false;
+            }
+
+            document.getElementById('mode-ru-kz').addEventListener('click', function() {
+                switchMode('ru-kz');
+            });
+            document.getElementById('mode-kz-ru').addEventListener('click', function() {
+                switchMode('kz-ru');
+            });
+
+            document.getElementById('check-btn').addEventListener('click', checkAnswers);
+            document.getElementById('reshuffle-btn').addEventListener('click', reshuffleExercise);
+
+            document.getElementById('exercise-list').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                    e.preventDefault();
+                    checkAnswers();
+                }
+            });
+
+            loadCustomWords();
+            rebuildAllWords();
+            selectExerciseWords();
+            renderExercise();
+            updateModeButtons();
+        })();
+    </script>
+</body>
+</html>
