@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Словарь — казахско-русский</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #fff;
+            color: #222;
+            line-height: 1.5;
+            padding: 20px;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.6em;
+            margin-bottom: 24px;
+            font-weight: 600;
+        }
+        h2 {
+            font-size: 1.2em;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .dict-wrap {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 2px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+        table th,
+        table td {
+            padding: 8px 14px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        table th {
+            background: #f5f5f5;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        table tr:hover td {
+            background: #fafafa;
+        }
+        table .col-kz {
+            width: 45%;
+        }
+        table .col-ru {
+            width: 45%;
+        }
+        table .col-del {
+            width: 10%;
+            text-align: center;
+        }
+        .custom-row td {
+            background: #fffef5;
+        }
+        .del-btn {
+            background: none;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            font-size: 0.85em;
+            padding: 2px 10px;
+            border-radius: 2px;
+            color: #999;
+            transition: 0.15s;
+        }
+        .del-btn:hover {
+            color: #c0392b;
+            border-color: #c0392b;
+        }
+
+        .add-form {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            margin-bottom: 4px;
+        }
+        .add-form input {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            font-size: 0.95em;
+            flex: 1 1 180px;
+            min-width: 130px;
+            font-family: inherit;
+        }
+        .add-form button {
+            padding: 8px 18px;
+            border: 1px solid #999;
+            background: #f5f5f5;
+            cursor: pointer;
+            border-radius: 2px;
+            font-size: 0.95em;
+            font-family: inherit;
+            white-space: nowrap;
+            transition: 0.15s;
+        }
+        .add-form button:hover {
+            background: #e8e8e8;
+        }
+        .form-msg {
+            font-size: 0.85em;
+            min-height: 1.2em;
+            margin-top: 2px;
+        }
+        .form-msg.ok {
+            color: #2d7a3a;
+        }
+        .form-msg.err {
+            color: #c0392b;
+        }
+
+        .nav-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #444;
+            text-decoration: none;
+            border: 1px solid #ccc;
+            padding: 6px 16px;
+            border-radius: 2px;
+            font-size: 0.9em;
+            transition: 0.15s;
+        }
+        .nav-link:hover {
+            background: #f5f5f5;
+            border-color: #999;
+        }
+    </style>
+</head>
+<body>
+    <main>
+
+        <a class="nav-link" href="exercises.html">Перейти к упражнениям</a>
+        <h1>Словарь</h1>
+
+        <div class="dict-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-kz">Казахский</th>
+                        <th class="col-ru">Русский</th>
+                        <th class="col-del"></th>
+                    </tr>
+                </thead>
+                <tbody id="dict-tbody"></tbody>
+            </table>
+        </div>
+
+        <h2>Добавить слово</h2>
+        <div class="add-form" id="add-word-form">
+            <input type="text" id="new-kz" placeholder="Казахское слово" autocomplete="off">
+            <input type="text" id="new-ru" placeholder="Русский перевод" autocomplete="off">
+            <button type="button" id="add-btn">Добавить</button>
+        </div>
+        <div class="form-msg" id="form-msg"></div>
+
+    </main>
+
+    <script>
+        (function() {
+            const STORAGE_KEY = 'kazdict_custom_words_v3';
+
+            const defaultWords = [
+                { kz: 'отбасы', ru: 'семья' },
+                { kz: 'білім', ru: 'знание' },
+                { kz: 'ғылым', ru: 'наука' },
+                { kz: 'мәдениет', ru: 'культура' },
+                { kz: 'дәстүр', ru: 'традиция' },
+                { kz: 'табиғат', ru: 'природа' },
+                { kz: 'экология', ru: 'экология' },
+                { kz: 'технология', ru: 'технология' },
+                { kz: 'денсаулық', ru: 'здоровье' },
+                { kz: 'экономика', ru: 'экономика' },
+                { kz: 'тарих', ru: 'история' },
+                { kz: 'өнер', ru: 'искусство' },
+                { kz: 'Отан', ru: 'Родина' },
+                { kz: 'патриотизм', ru: 'патриотизм' },
+                { kz: 'жастар', ru: 'молодёжь' },
+                { kz: 'еңбек', ru: 'труд' },
+                { kz: 'мамандық', ru: 'профессия' },
+                { kz: 'адамгершілік', ru: 'нравственность' },
+                { kz: 'жаһандану', ru: 'глобализация' },
+                { kz: 'тәуелсіздік', ru: 'независимость' },
+                { kz: 'бейбітшілік', ru: 'мир' },
+                { kz: 'достық', ru: 'дружба' },
+                { kz: 'болашақ', ru: 'будущее' },
+                { kz: 'даму', ru: 'развитие' },
+                { kz: 'құқық', ru: 'право' },
+                { kz: 'әділеттілік', ru: 'справедливость' },
+                { kz: 'тіл', ru: 'язык' },
+                { kz: 'ұлт', ru: 'нация' },
+                { kz: 'руханият', ru: 'духовность' },
+                { kz: 'құндылық', ru: 'ценность' },
+                { kz: 'тәрбие', ru: 'воспитание' },
+                { kz: 'мемлекет', ru: 'государство' },
+                { kz: 'қоғам', ru: 'общество' },
+                { kz: 'еркіндік', ru: 'свобода' },
+                { kz: 'жауапкершілік', ru: 'ответственность' },
+                { kz: 'сыйластық', ru: 'уважение' },
+                { kz: 'ынтымақтастық', ru: 'сотрудничество' },
+                { kz: 'мұра', ru: 'наследие' },
+                { kz: 'өркениет', ru: 'цивилизация' },
+                { kz: 'көшбасшы', ru: 'лидер' },
+                { kz: 'жетістік', ru: 'достижение' },
+                { kz: 'мүмкіндік', ru: 'возможность' },
+            ];
+
+            let customWords = [];
+            let allWords = [];
+
+            function loadCustomWords() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (Array.isArray(parsed)) {
+                            customWords = parsed
+                                .filter(w => w && typeof w.kz === 'string' && typeof w.ru === 'string' && w.kz.trim() && w.ru.trim())
+                                .map(w => ({ kz: w.kz.trim(), ru: w.ru.trim(), isCustom: true }));
+                        }
+                    }
+                } catch (e) {
+                    customWords = [];
+                }
+            }
+
+            function saveCustomWords() {
+                const toSave = customWords.map(w => ({ kz: w.kz, ru: w.ru }));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+            }
+
+            function rebuildAllWords() {
+                allWords = [...defaultWords.map(w => ({ ...w, isCustom: false })), ...customWords];
+            }
+
+            function renderDictionary() {
+                const tbody = document.getElementById('dict-tbody');
+                tbody.innerHTML = '';
+                allWords.forEach((w, index) => {
+                    const tr = document.createElement('tr');
+                    if (w.isCustom) tr.classList.add('custom-row');
+
+                    const tdKz = document.createElement('td');
+                    tdKz.textContent = w.kz;
+                    tdKz.classList.add('col-kz');
+
+                    const tdRu = document.createElement('td');
+                    tdRu.textContent = w.ru;
+                    tdRu.classList.add('col-ru');
+
+                    const tdDel = document.createElement('td');
+                    tdDel.classList.add('col-del');
+                    if (w.isCustom) {
+                        const delBtn = document.createElement('button');
+                        delBtn.textContent = 'x';
+                        delBtn.classList.add('del-btn');
+                        delBtn.title = 'Удалить слово';
+                        delBtn.addEventListener('click', () => deleteCustomWord(index));
+                        tdDel.appendChild(delBtn);
+                    }
+
+                    tr.appendChild(tdKz);
+                    tr.appendChild(tdRu);
+                    tr.appendChild(tdDel);
+                    tbody.appendChild(tr);
+                });
+            }
+
+            function deleteCustomWord(indexInAll) {
+                const word = allWords[indexInAll];
+                if (!word || !word.isCustom) return;
+                const customIndex = customWords.findIndex(
+                    cw => cw.kz === word.kz && cw.ru === word.ru && cw.isCustom
+                );
+                if (customIndex >= 0) {
+                    customWords.splice(customIndex, 1);
+                    saveCustomWords();
+                    rebuildAllWords();
+                    renderDictionary();
+                }
+            }
+
+            function addWord() {
+                const inputKz = document.getElementById('new-kz');
+                const inputRu = document.getElementById('new-ru');
+                const msgEl = document.getElementById('form-msg');
+                const kzVal = inputKz.value.trim();
+                const ruVal = inputRu.value.trim();
+
+                msgEl.textContent = '';
+                msgEl.className = 'form-msg';
+
+                if (!kzVal || !ruVal) {
+                    msgEl.textContent = 'Заполните оба поля.';
+                    msgEl.className = 'form-msg err';
+                    return;
+                }
+
+                const duplicate = allWords.find(
+                    w => w.kz.toLowerCase() === kzVal.toLowerCase() && w.ru.toLowerCase() === ruVal.toLowerCase()
+                );
+                if (duplicate) {
+                    msgEl.textContent = 'Такая пара слов уже есть в словаре.';
+                    msgEl.className = 'form-msg err';
+                    return;
+                }
+
+                customWords.push({ kz: kzVal, ru: ruVal, isCustom: true });
+                saveCustomWords();
+                rebuildAllWords();
+                renderDictionary();
+
+                inputKz.value = '';
+                inputRu.value = '';
+                msgEl.textContent = 'Слово добавлено.';
+                msgEl.className = 'form-msg ok';
+                inputKz.focus();
+
+                setTimeout(() => {
+                    if (msgEl.textContent === 'Слово добавлено.') {
+                        msgEl.textContent = '';
+                        msgEl.className = 'form-msg';
+                    }
+                }, 2000);
+            }
+
+            document.getElementById('add-btn').addEventListener('click', addWord);
+            document.getElementById('add-word-form').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addWord();
+                }
+            });
+
+            loadCustomWords();
+            rebuildAllWords();
+            renderDictionary();
+        })();
+    </script>
+</body>
+</html>
